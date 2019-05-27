@@ -18,7 +18,3 @@
 # A Spark Worker will be started on each of the machines listed below.
 
 127.0.0.1 #localhost
-
-# 10.252.37.109 #localhost
-# 10.252.37.101 #blade2-node
-# 10.252.37.110 #blade3-node
