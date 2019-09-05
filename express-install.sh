@@ -223,6 +223,12 @@ if [ $(id -u) -eq 0 ]; then
         fi
     fi
 
+    sudo -H -u $username bash -c 'ssh-keygen';
+    sudo -H -u $username bash -c 'touch /home/'$username'/.ssh/authorized_keys';
+    sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
+    sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
+
+
     echo "Successfully Checking";
 
     echo "";
