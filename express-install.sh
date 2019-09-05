@@ -197,8 +197,8 @@ if [ $(id -u) -eq 0 ]; then
             echo -e 'export PYSPARK_PYTHON="'$python'"' >> $profile;
             echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> $profile;
 
-            hadoop=$(echo "$HADOOP_HOME");
-            if [ -z "$HADOOP_HOME"] ; then
+            hadoop=$(echo "$HADOOP");
+            if [ -z "$HADOOP"] ; then
                 echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> $profile;
             else
                 echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> $profile;
@@ -215,8 +215,8 @@ if [ $(id -u) -eq 0 ]; then
         echo -e 'export PYSPARK_PYTHON="'$python'"' >> $profile;
         echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> $profile;
 
-        hadoop=$(echo "$HADOOP_HOME");
-        if [ -z "$HADOOP_HOME"] ; then
+        hadoop=$(echo "$HADOOP");
+        if [ -z "$HADOOP"] ; then
             echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> $profile;
         else
             echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> $profile;
