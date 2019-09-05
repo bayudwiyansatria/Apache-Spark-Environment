@@ -192,9 +192,9 @@ if [ $(id -u) -eq 0 ]; then
 
             hadoop=$(echo "$HADOOP_HOME");
             if [ -z "$HADOOP_HOME"] ; then
-                echo -e 'export PATH=${LOCAL_PATH}:${SPARK_HOME}' >> /home/$username/.bash_profile;
+                echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> /home/$username/.bash_profile;
             else
-                echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK_HOME}' >> /home/$username/.bash_profile;
+                echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> /home/$username/.bash_profile;
             fi
         fi
     else
@@ -212,9 +212,9 @@ if [ $(id -u) -eq 0 ]; then
 
         hadoop=$(echo "$HADOOP_HOME");
         if [ -z "$HADOOP_HOME"] ; then
-            echo -e 'export PATH=${LOCAL_PATH}:${SPARK_HOME}' >> /home/$username/.bash_profile;
+            echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> /home/$username/.bash_profile;
         else
-            echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK_HOME}' >> /home/$username/.bash_profile;
+            echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> /home/$username/.bash_profile;
         fi
     fi
 
