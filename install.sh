@@ -198,7 +198,7 @@ if [ $(id -u) -eq 0 ]; then
         fi
     fi
 
-    chown $username:root -R $SPARK_HOME;
+    chown $username:$username -R $SPARK_HOME;
     chmod g+rwx -R $SPARK_HOME;
 
     echo "";
@@ -216,6 +216,17 @@ if [ $(id -u) -eq 0 ]; then
             cp /tmp/$configuration $SPARK_HOME/conf;
         done
     fi
+
+    # Network Configuration
+
+    interface=$(ip route | awk '/^default/ { print $5 }');
+    ipaddr=$(ip route | awk '/^default/ { print $3 }');
+    subnet=$(ip addr show "$interface" | grep "inet" | awk -F'[: ]+' '{ print $3 }' | head -1);
+    network=$(ipcalc -n "$subnet" | cut -f2 -d= );
+    prefix=$(ipcalc -p "$subnet" | cut -f2 -d= );
+    hostname=$(echo "$HOSTNAME");
+    
+    echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
 
     echo "";
     echo "################################################";
@@ -280,7 +291,7 @@ if [ $(id -u) -eq 0 ]; then
     sudo -H -u $username bash -c 'touch /home/'$username'/.ssh/authorized_keys';
     sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
     sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
-    
+
     echo "Successfully Checking";
 
     echo "";

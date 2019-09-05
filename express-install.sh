@@ -144,7 +144,7 @@ if [ $(id -u) -eq 0 ]; then
         echo "";
     fi
 
-    chown $username:root -R $SPARK_HOME;
+    chown $username:$username -R $SPARK_HOME;
     chmod g+rwx -R $SPARK_HOME;
 
 
@@ -163,6 +163,16 @@ if [ $(id -u) -eq 0 ]; then
         rm $SPARK_HOME/conf/$configuration;
         cp /tmp/$configuration $SPARK_HOME/conf;
     done
+
+    # Network Configuration
+
+    interface=$(ip route | awk '/^default/ { print $5 }');
+    ipaddr=$(ip route | awk '/^default/ { print $3 }');
+    subnet=$(ip addr show "$interface" | grep "inet" | awk -F'[: ]+' '{ print $3 }' | head -1);
+    network=$(ipcalc -n "$subnet" | cut -f2 -d= );
+    prefix=$(ipcalc -p "$subnet" | cut -f2 -d= );
+    hostname=$(echo "$HOSTNAME");
+    echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
 
     echo "";
     echo "################################################";
