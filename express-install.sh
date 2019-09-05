@@ -186,7 +186,7 @@ if [ $(id -u) -eq 0 ]; then
         if [ $os == "ubuntu" ] ; then
             apt-get -y install git && apt-get -y install wget;
         else 
-            yum install java-1.8.0-openjdk;
+            yum -y install java-1.8.0-openjdk;
             java=$(dirname $(readlink -f $(which java))|sed 's^/bin^^');
             python=$(dirname $(readlink -f $(which java)));
             echo -e 'export JAVA_HOME="'$java'"' >> $profile;
