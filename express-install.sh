@@ -79,10 +79,20 @@ if [ $(id -u) -eq 0 ]; then
     if [ "$argv" ] ; then
         distribution="spark-$argv";
         packages=$distribution;
+        read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
+        hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+        if [ "$hadoop" == "y" ]; then
+            $packages="$distribution-bin-hadoop2.7"
+        fi
     else
         distribution="stable";
         version="2.4.3";
         packages="spark-$version";
+        read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
+        hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+        if [ "$hadoop" == "y" ]; then
+            $packages="$distribution-bin-hadoop2.7"
+        fi
     fi
 
     echo "################################################";

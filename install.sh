@@ -36,18 +36,26 @@ if [ $(id -u) -eq 0 ]; then
     os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]');
 
     read -p "Update Distro (y/n) [ENTER] (y)(Recommended): " update;
-    if [ $update == "y" ] ; then
-        if [ $os == "ubuntu" ] ; then
-            apt-get -y update && apt-get -y upgrade;
-        else 
-            yum -y update && yum -y upgrade;
+    update=$(printf '%s\n' "$update" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+    
+    if [ -n "$update" ] ; then
+        if [ "$update" == "y" ]; then
+            if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+                apt-get -y update && apt-get -y upgrade;
+            elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
+                yum -y update && yum -y upgrade;
+            else
+                exit 1;
+            fi
         fi
-    fi
-
-    if [ $os == "ubuntu" ] ; then
-        apt-get -y install git && apt-get -y install wget;
-    else 
-        yum -y install git && yum -y install wget;
+    else
+        if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+            apt-get -y update && apt-get -y upgrade;
+        elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
+            yum -y update && yum -y upgrade;
+        else
+            exit 1;
+        fi
     fi
 
     echo "################################################";
@@ -87,14 +95,26 @@ if [ $(id -u) -eq 0 ]; then
         packages=$distribution;
     else
         read -p "Enter spark distribution version, (NULL FOR STABLE) [ENTER] : "  version;
+        version=$(printf '%s\n' "$version" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+
         if [ -z "$version" ] ; then 
             echo "spark version is not specified! Installing spark with lastest stable version";
             distribution="stable";
             version="2.4.0";
             packages="spark-$version";
+            read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
+            hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+            if [ "$hadoop" == "y" ]; then
+                $packages="$distribution-bin-hadoop2.7"
+            fi
         else
             distribution="spark-$version";
             packages=$distribution;
+            read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
+            hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+            if [ "$hadoop" == "y" ]; then
+                $packages="$distribution-bin-hadoop2.7"
+            fi
         fi
     fi
 
@@ -104,7 +124,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Packages Available
-    url=https://www-eu.apache.org/dist/spark/$distribution/$packages.tar.gz;
+    url=https://www-eu.apache.org/dist/spark/$distribution/$packages.tgz;
     echo "Checking availablility spark $version";
     if curl --output /dev/null --silent --head --fail "$url"; then
         echo "spark version is available: $url";
@@ -115,7 +135,7 @@ if [ $(id -u) -eq 0 ]; then
 
     echo "spark version $version install is in progress, Please keep your computer power on";
 
-    wget https://www-eu.apache.org/dist/spark/$distribution/$packages.tar.gz -O /tmp/$packages.tar.gz;
+    wget https://www-eu.apache.org/dist/spark/$distribution/$packages.tgz -O /tmp/$packages.tgz;
 
     echo "";
     echo "################################################";
@@ -127,7 +147,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Extraction Packages
-    tar -xvf /tmp/$packages.tar.gz;
+    tar -xvf /tmp/$packages.tgz;
     mv /tmp/$packages $SPARK_HOME;
 
     # User Generator
