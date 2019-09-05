@@ -198,9 +198,6 @@ if [ $(id -u) -eq 0 ]; then
         fi
     fi
 
-    chown $username:$username -R $SPARK_HOME;
-    chmod g+rwx -R $SPARK_HOME;
-
     echo "";
     echo "################################################";
     echo "##             Spark Configuration            ##";
@@ -227,6 +224,9 @@ if [ $(id -u) -eq 0 ]; then
     hostname=$(echo "$HOSTNAME");
     
     echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+
+    chown $username:$username -R $SPARK_HOME;
+    chmod g+rwx -R $SPARK_HOME;
 
     echo "";
     echo "################################################";

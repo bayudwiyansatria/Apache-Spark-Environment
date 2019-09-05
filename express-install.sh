@@ -144,10 +144,6 @@ if [ $(id -u) -eq 0 ]; then
         echo "";
     fi
 
-    chown $username:$username -R $SPARK_HOME;
-    chmod g+rwx -R $SPARK_HOME;
-
-
     echo "";
     echo "################################################";
     echo "##             Spark Configuration            ##";
@@ -172,7 +168,12 @@ if [ $(id -u) -eq 0 ]; then
     network=$(ipcalc -n "$subnet" | cut -f2 -d= );
     prefix=$(ipcalc -p "$subnet" | cut -f2 -d= );
     hostname=$(echo "$HOSTNAME");
+    
     echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+
+    chown $username:$username -R $SPARK_HOME;
+    chmod g+rwx -R $SPARK_HOME;
+
 
     echo "";
     echo "################################################";
