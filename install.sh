@@ -189,6 +189,7 @@ if [ $(id -u) -eq 0 ]; then
 
     read -p "Using default configuration (y/n) [ENTER] (y): " conf;
     if $conf == "y" ; then
+        files=(slaves spark-defaults.conf spark-env.sh);
         for configuration in "${files[@]}" ; do 
             wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
             rm $SPARK_HOME/conf/$configuration;
