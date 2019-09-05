@@ -315,11 +315,11 @@ if [ $(id -u) -eq 0 ]; then
         echo "Configuration authentication";
         echo "";
         sudo -H -u $username bash -c 'touch /home/'$username'/.ssh/authorized_keys';
-        sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
         echo "Authentication Compelete";
         echo "";
     fi
     
+    sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
     chown -R $username:$username "/home/$username/.ssh/*";
     sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
 
