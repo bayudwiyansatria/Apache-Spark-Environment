@@ -163,7 +163,7 @@ if [ $(id -u) -eq 0 ]; then
                 echo "$username exists!"
             else
                 pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
-                useradd -m -p $pass $username
+                user nadd -m -p $pass $username
                 [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
             fi
             usermod -aG $username $password;
@@ -222,8 +222,16 @@ if [ $(id -u) -eq 0 ]; then
     echo "##             Java Virtual Machine           ##";
     echo "################################################";
     echo "";
-
+    
+    profile="/etc/profile.d/bayudwiyansatria.sh";
     echo "Checking Java virtual machine is running on your machine";
+    if [ -e "$profile"] ; then
+        echo "Environment already setup";
+    else
+        touch $profile;
+        env=$(echo "$PATH");
+        echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
+    fi
 
     java=$(echo "$JAVA_HOME");
     if [ -z "$java" ] ; then
@@ -233,41 +241,38 @@ if [ $(id -u) -eq 0 ]; then
             yum install java-1.8.0-openjdk;
             java=$(dirname $(readlink -f $(which java))|sed 's^/bin^^');
             python=$(dirname $(readlink -f $(which java)));
-            env=$(echo "$PATH");
-            echo -e 'export LOCAL_PATH="'$env'"' >> /home/$username/.bash_profile;
-            echo -e 'export JAVA_HOME="'$java'"' >> /home/$username/.bash_profile;
-            echo -e '# Apache Spark Environment' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK_HISTORY_OPTS=""' >> /home/$username/.bash_profile;
-            echo -e 'export PYSPARK_PYTHON="'$python'"' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> /home/$username/.bash_profile;
+            echo -e 'export JAVA_HOME="'$java'"' >> $profile;
+            echo -e '# Apache Spark Environment' >> $profile;
+            echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> $profile;
+            echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> $profile;
+            echo -e 'export SPARK_HISTORY_OPTS=""' >> $profile;
+            echo -e 'export PYSPARK_PYTHON="'$python'"' >> $profile;
+            echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> $profile;
 
             hadoop=$(echo "$HADOOP_HOME");
             if [ -z "$HADOOP_HOME"] ; then
-                echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> /home/$username/.bash_profile;
+                echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> $profile;
             else
-                echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> /home/$username/.bash_profile;
+                echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> $profile;
             fi
         fi
     else
         java=$(dirname $(readlink -f $(which java))|sed 's^/bin^^');
         python=$(dirname $(readlink -f $(which java)));
-        env=$(echo "$PATH");
-        echo -e 'export LOCAL_PATH="'$env'"' >> /home/$username/.bash_profile;
-        echo -e 'export JAVA_HOME="'$java'"' >> /home/$username/.bash_profile;
-        echo -e '# Apache Spark Environment' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK_HISTORY_OPTS=""' >> /home/$username/.bash_profile;
-        echo -e 'export PYSPARK_PYTHON="'$python'"' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> /home/$username/.bash_profile;
+        echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
+        echo -e 'export JAVA_HOME="'$java'"' >> $profile;
+        echo -e '# Apache Spark Environment' >> $profile;
+        echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> $profile;
+        echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> $profile;
+        echo -e 'export SPARK_HISTORY_OPTS=""' >> $profile;
+        echo -e 'export PYSPARK_PYTHON="'$python'"' >> $profile;
+        echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> $profile;
 
         hadoop=$(echo "$HADOOP_HOME");
         if [ -z "$HADOOP_HOME"] ; then
-            echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> /home/$username/.bash_profile;
+            echo -e 'export PATH=${LOCAL_PATH}:${SPARK}' >> $profile;
         else
-            echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> /home/$username/.bash_profile;
+            echo -e 'export PATH=${LOCAL_PATH}:${HADOOP}:${SPARK}' >> $profile;
         fi
     fi
 
