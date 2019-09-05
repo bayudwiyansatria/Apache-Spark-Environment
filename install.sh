@@ -287,12 +287,41 @@ if [ $(id -u) -eq 0 ]; then
         fi
     fi
 
-    sudo -H -u $username bash -c 'ssh-keygen';
-    sudo -H -u $username bash -c 'touch /home/'$username'/.ssh/authorized_keys';
-    sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
-    sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
-
     echo "Successfully Checking";
+
+    echo "";
+    echo "################################################";
+    echo "##             Authorization                  ##";
+    echo "################################################";
+    echo "";
+
+    echo "Setting up cluster authorization";
+    echo "";
+
+    if [[ -f "/home/$username/.ssh/id_rsa" && -f "/home/$username/.ssh/id_rsa.pub" ]]; then
+        echo "SSH already setup";
+        echo "";
+    else
+        echo "SSH setup";
+        echo "";
+        sudo -H -u $username bash -c 'ssh-keygen';
+        echo "Generate SSH Success";
+    fi
+
+    if [ -e "/home/$username/.ssh/authorized_keys" ] ; then
+        echo "Authorization already setup";
+        echo "";
+    else
+        echo "Configuration authentication";
+        echo "";
+        sudo -H -u $username bash -c 'touch /home/'$username'/.ssh/authorized_keys';
+        sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
+        echo "Authentication Compelete";
+        echo "";
+    fi
+    
+    chown -R $username:$username "/home/$username/.ssh/*";
+    sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
 
     echo "";
     echo "############################################";
