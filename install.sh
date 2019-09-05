@@ -128,24 +128,58 @@ if [ $(id -u) -eq 0 ]; then
 
     # Extraction Packages
     tar -xvf /tmp/$packages.tar.gz;
-    mkdir -p /usr/local/spark;
-    mv /tmp/$packages /usr/local/spark;
+    mv /tmp/$packages $SPARK_HOME;
 
     # User Generator
-    read -p "Enter username : " username;
-    read -s -p "Enter password : " password;
-    egrep "^$username" /etc/passwd >/dev/null;
-    if [ $? -eq 0 ]; then
-        echo "$username exists!"
+    read -p "Do you want to create user for spark administrator? (y/N) [ENTER] (y) " createuser;
+    createuser=$(printf '%s\n' "$createuser" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+
+    if [ -n createuser ] ; then
+        if [ "$createuser" == "y" ] ; then
+            read -p "Enter username : " username;
+            read -s -p "Enter password : " password;
+            egrep "^$username" /etc/passwd >/dev/null;
+            if [ $? -eq 0 ]; then
+                echo "$username exists!"
+            else
+                pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
+                useradd -m -p $pass $username
+                [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
+            fi
+            usermod -aG $username $password;
+        else
+            read -p "Do you want to use exisiting user for spark administrator? (y/N) [ENTER] (y) " existinguser;
+            if [ "$existinguser" == "y" ] ; then
+                read -p "Enter username : " username;
+                egrep "^$username" /etc/passwd >/dev/null;
+                if [ $? -eq 0 ]; then
+                    echo "$username | OK" ;
+                else
+                    echo "Username isn't exist we use root instead";
+                    username=$(whoami);
+                fi 
+            else 
+                username=$(whoami);
+            fi
+        fi
     else
-        pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
-        useradd -m -p $pass $username
-        [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
+        read -p "Enter username : " username;
+        read -s -p "Enter password : " password;
+        egrep "^$username" /etc/passwd >/dev/null;
+        if [ $? -eq 0 ]; then
+            echo "$username exists!"
+        else
+            pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
+            useradd -m -p $pass $username
+            [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
+            usermod -aG $username $password;
+            echo "User $username created successfully";
+            echo "";
+        fi
     fi
 
-    usermod -aG $username $password;
-    chown $username:root -R /usr/local/spark;
-    chmod g+rwx -R /usr/local/spark;
+    chown $username:root -R $SPARK_HOME;
+    chmod g+rwx -R $SPARK_HOME;
 
     echo "";
     echo "################################################";
