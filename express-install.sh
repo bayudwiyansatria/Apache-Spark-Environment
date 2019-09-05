@@ -82,7 +82,7 @@ if [ $(id -u) -eq 0 ]; then
         read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
         hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
         if [ "$hadoop" == "y" ]; then
-            $packages="$distribution-bin-hadoop2.7"
+            packages="$packages-bin-hadoop2.7"
         fi
     else
         distribution="stable";
@@ -91,7 +91,7 @@ if [ $(id -u) -eq 0 ]; then
         read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
         hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
         if [ "$hadoop" == "y" ]; then
-            $packages="$distribution-bin-hadoop2.7"
+            packages="$packages-bin-hadoop2.7"
         fi
     fi
 
@@ -184,8 +184,8 @@ if [ $(id -u) -eq 0 ]; then
             echo -e 'export LOCAL_PATH="'$env'"' >> /home/$username/.bash_profile;
             echo -e 'export JAVA_HOME="'$java'"' >> /home/$username/.bash_profile;
             echo -e '# Apache Spark Environment' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK_HOME=="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
-            echo -e 'export SPARK_CONF_DIR==${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
+            echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
+            echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
             echo -e 'export SPARK_HISTORY_OPTS=""' >> /home/$username/.bash_profile;
             echo -e 'export PYSPARK_PYTHON="'$python'"' >> /home/$username/.bash_profile;
             echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> /home/$username/.bash_profile;
@@ -204,8 +204,8 @@ if [ $(id -u) -eq 0 ]; then
         echo -e 'export LOCAL_PATH="'$env'"' >> /home/$username/.bash_profile;
         echo -e 'export JAVA_HOME="'$java'"' >> /home/$username/.bash_profile;
         echo -e '# Apache Spark Environment' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK_HOME=="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
-        echo -e 'export SPARK_CONF_DIR==${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
+        echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> /home/$username/.bash_profile;
+        echo -e 'export SPARK_CONF_DIR=${SPARK_HOME}/conf' >> /home/$username/.bash_profile;
         echo -e 'export SPARK_HISTORY_OPTS=""' >> /home/$username/.bash_profile;
         echo -e 'export PYSPARK_PYTHON="'$python'"' >> /home/$username/.bash_profile;
         echo -e 'export SPARK=${SPARK_HOME}/bin:${SPARK_HOME}/sbin' >> /home/$username/.bash_profile;
