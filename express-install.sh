@@ -173,12 +173,11 @@ if [ $(id -u) -eq 0 ]; then
     echo "Checking Java virtual machine is running on your machine";
 
     profile="/etc/profile.d/bayudwiyansatria.sh";
-    echo "Checking Java virtual machine is running on your machine";
+    env=$(echo "$PATH");
     if [ -e "$profile"] ; then
         echo "Environment already setup";
     else
         touch $profile;
-        env=$(echo "$PATH");
         echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
     fi
 
@@ -190,8 +189,6 @@ if [ $(id -u) -eq 0 ]; then
             yum install java-1.8.0-openjdk;
             java=$(dirname $(readlink -f $(which java))|sed 's^/bin^^');
             python=$(dirname $(readlink -f $(which java)));
-            env=$(echo "$PATH");
-            echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
             echo -e 'export JAVA_HOME="'$java'"' >> $profile;
             echo -e '# Apache Spark Environment' >> $profile;
             echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> $profile;
@@ -210,8 +207,6 @@ if [ $(id -u) -eq 0 ]; then
     else
         java=$(dirname $(readlink -f $(which java))|sed 's^/bin^^');
         python=$(dirname $(readlink -f $(which java)));
-        env=$(echo "$PATH");
-        echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
         echo -e 'export JAVA_HOME="'$java'"' >> $profile;
         echo -e '# Apache Spark Environment' >> $profile;
         echo -e 'export SPARK_HOME="'$SPARK_HOME'"' >> $profile;

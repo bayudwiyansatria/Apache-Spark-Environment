@@ -223,13 +223,13 @@ if [ $(id -u) -eq 0 ]; then
     echo "################################################";
     echo "";
     
-    profile="/etc/profile.d/bayudwiyansatria.sh";
     echo "Checking Java virtual machine is running on your machine";
+    profile="/etc/profile.d/bayudwiyansatria.sh";
+    env=$(echo "$PATH");
     if [ -e "$profile"] ; then
         echo "Environment already setup";
     else
         touch $profile;
-        env=$(echo "$PATH");
         echo -e 'export LOCAL_PATH="'$env'"' >> $profile;
     fi
 
