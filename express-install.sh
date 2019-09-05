@@ -24,30 +24,35 @@ if [ $(id -u) -eq 0 ]; then
     echo "Please wait! Checking System Compability";
     echo "";
 
-    # System Operation Information
+    # Operation System Information
     if type lsb_release >/dev/null 2>&1 ; then
-    os=$(lsb_release -i -s);
+        os=$(lsb_release -i -s);
     elif [ -e /etc/os-release ] ; then
-    os=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release);
-    elif [ -e /etc/*-os-release ] ; then
-    os=$(awk -F= '$1 == "ID" {print $3}' /etc/*-os-release);
+        os=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release);
+    elif [ -e /etc/os-release ] ; then
+        os=$(awk -F= '$1 == "ID" {print $3}' /etc/os-release);
+    else
+        exit 1;
     fi
 
-    os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]');
+    os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
 
-    read -p "Update Distro (y/n) [ENTER] (y)(Recommended): " update;
-    if [ $update == "y" ] ; then
-        if [ $os == "ubuntu" ] ; then
-            apt-get -y update && apt-get -y upgrade;
-        else 
-            yum -y update && yum -y upgrade;
-        fi
+    # Update OS Current Distribution
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+        apt-get -y update && apt-get -y upgrade;
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
+        yum -y update && yum -y upgrade;
+    else
+        exit 1;
     fi
 
-    if [ $os == "ubuntu" ] ; then
+    # Required Packages
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
         apt-get -y install git && apt-get -y install wget;
-    else 
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ]; then
         yum -y install git && yum -y install wget;
+    else
+        exit 1;
     fi
 
     echo "################################################";
@@ -80,42 +85,26 @@ if [ $(id -u) -eq 0 ]; then
         packages="spark-$version";
     fi
 
-    argv="$1";
-    echo $argv;
-    if [ "$argv" ] ; then
-        distribution="spark-$argv";
-        packages=$distribution;
-    else
-        read -p "Enter spark distribution version, (NULL FOR STABLE) [ENTER] : "  version;
-        if [ -z "$version" ] ; then 
-            echo "spark version is not specified! Installing spark with lastest stable version";
-            distribution="stable";
-            version="2.4.0";
-            packages="spark-$version";
-        else
-            distribution="spark-$version";
-            packages=$distribution;
-        fi
-    fi
-
     echo "################################################";
     echo "##         Collect Spark Distribution         ##";
     echo "################################################";
     echo "";
 
     # Packages Available
-    url=https://www-eu.apache.org/dist/spark/$distribution/$packages.tar.gz;
+    mirror=https://www-eu.apache.org/dist/spark;
+    url=$mirror/$distribution/$packages.tgz;
     echo "Checking availablility spark $version";
     if curl --output /dev/null --silent --head --fail "$url"; then
-        echo "spark version is available: $url";
+        echo "Spark version is available: $url";
     else
-        echo "spark version isn't available: $url";
+        echo "Spark version isn't available: $url";
         exit 1;
     fi
 
-    echo "spark version $version install is in progress, Please keep your computer power on";
+    echo "";
+    echo "Spark version $version install is in progress, Please keep your computer power on";
 
-    wget https://www-eu.apache.org/dist/spark/$distribution/$packages.tar.gz -O /tmp/$packages.tar.gz;
+    wget $mirror/$distribution/$packages.tgz -O /tmp/$packages.tgz;
 
     echo "";
     echo "################################################";
@@ -123,17 +112,16 @@ if [ $(id -u) -eq 0 ]; then
     echo "################################################";
     echo "";
 
-    echo "Installing Spark Version  $distribution";
+    echo "Installing Spark Version $distribution";
     echo "";
 
     # Extraction Packages
-    tar -xvf /tmp/$packages.tar.gz;
-    mkdir -p /usr/local/spark;
-    mv /tmp/$packages /usr/local/spark;
+    tar -xvf /tmp/$packages.tgz;
+    mv $packages $SPARK_HOME;
 
     # User Generator
-    read -p "Enter username : " username;
-    read -s -p "Enter password : " password;
+    username="spark";
+    password="spark";
     egrep "^$username" /etc/passwd >/dev/null;
     if [ $? -eq 0 ]; then
         echo "$username exists!"
@@ -141,11 +129,14 @@ if [ $(id -u) -eq 0 ]; then
         pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
         useradd -m -p $pass $username
         [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
+        usermod -aG $username $password;
+        echo "User $username created successfully";
+        echo "";
     fi
 
-    usermod -aG $username $password;
-    chown $username:root -R /usr/local/spark;
-    chmod g+rwx -R /usr/local/spark;
+    chown $username:root -R $SPARK_HOME;
+    chmod g+rwx -R $SPARK_HOME;
+
 
     echo "";
     echo "################################################";
@@ -153,14 +144,15 @@ if [ $(id -u) -eq 0 ]; then
     echo "################################################";
     echo "";
 
-    read -p "Using default configuration (y/n) [ENTER] (y): " conf;
-    if $conf == "y" ; then
-        for configuration in "${files[@]}" ; do 
-            wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
-            rm $SPARK_HOME/conf/$configuration;
-            cp /tmp/$configuration $SPARK_HOME/conf;
-        done
-    fi
+    echo "Generate configuration file";
+
+    # Configuration Variable
+    files=(slaves spark-defaults.conf spark-env.sh);
+    for configuration in "${files[@]}" ; do 
+        wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
+        rm $SPARK_HOME/conf/$configuration;
+        cp /tmp/$configuration $SPARK_HOME/conf;
+    done
 
     echo "";
     echo "################################################";
