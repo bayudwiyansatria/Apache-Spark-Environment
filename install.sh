@@ -217,7 +217,7 @@ if [ $(id -u) -eq 0 ]; then
     # Network Configuration
 
     interface=$(ip route | awk '/^default/ { print $5 }');
-    ipaddr=$(ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1);
+    ipaddr=$(ip -o -4 addr list "$interface" | awk '{print $4}' | cut -d/ -f1);
     gateway=$(ip route | awk '/^default/ { print $3 }');
     subnet=$(ip addr show "$interface" | grep "inet" | awk -F'[: ]+' '{ print $3 }' | head -1);
     network=$(ipcalc -n "$subnet" | cut -f2 -d= );
