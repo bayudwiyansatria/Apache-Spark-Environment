@@ -254,7 +254,7 @@ if [ $(id -u) -eq 0 ]; then
     fi
     
     sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
-    chown -R $username:$username "/home/$username/.ssh/*";
+    chown -R $username:$username "/home/$username/.ssh/";
     sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
     
     echo "";
