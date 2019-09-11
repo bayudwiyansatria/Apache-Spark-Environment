@@ -48,9 +48,9 @@ if [ $(id -u) -eq 0 ]; then
 
     # Required Packages
     if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
-        apt-get -y install git && apt-get -y install wget;
+        apt-get -y install git && apt-get -y install wget && apt-get -y install ipcalc;
     elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ]; then
-        yum -y install git && yum -y install wget;
+        yum -y install git && yum -y install wget && yum -y install ipcalc;
     else
         exit 1;
     fi
@@ -64,7 +64,7 @@ if [ $(id -u) -eq 0 ]; then
 
     SPARK_HOME="/usr/local/spark";
     
-    if [ -e "$SPARK_HOME" ]; then
+    if [ -e "$SPARK_HOME/bin" ]; then
         echo "";
         echo "Spark is already installed on your machines.";
         echo "";
@@ -74,25 +74,14 @@ if [ $(id -u) -eq 0 ]; then
         echo "";
     fi
 
-    argv="$1";
-    echo $argv;
-    if [ "$argv" ] ; then
-        distribution="spark-$argv";
-        packages=$distribution;
-        read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
-        hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
-        if [ "$hadoop" == "y" ]; then
-            packages="$packages-bin-hadoop2.7"
-        fi
+    if [ "$1" ] ; then
+        version=$1;
+        distribution="stable";
+        packages="spark-$version";
     else
         distribution="stable";
-        version="2.4.3";
+        version="2.4.0";
         packages="spark-$version";
-        read -p "Using hadoop binary? (y/N) [ENTER] (y) : "  hadoop;
-        hadoop=$(printf '%s\n' "$hadoop" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
-        if [ "$hadoop" == "y" ]; then
-            packages="$packages-bin-hadoop2.7"
-        fi
     fi
 
     echo "################################################";
@@ -101,7 +90,12 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Packages Available
-    mirror=https://www-eu.apache.org/dist/spark;
+    if [ "$2" ] ; then
+        mirror="$2";
+    else
+        mirror=https://www-eu.apache.org/dist/spark;
+    fi
+
     url=$mirror/$distribution/$packages.tgz;
     echo "Checking availablility spark $version";
     if curl --output /dev/null --silent --head --fail "$url"; then
@@ -130,8 +124,18 @@ if [ $(id -u) -eq 0 ]; then
     mv $packages $SPARK_HOME;
 
     # User Generator
-    username="spark";
-    password="spark";
+    if [ "$3" ] ; then
+        username="$3";
+    else
+        username="spark";
+    fi
+
+    if [ "$4" ] ; then
+        password="$4";
+    else
+        password="spark";
+    fi
+
     egrep "^$username" /etc/passwd >/dev/null;
     if [ $? -eq 0 ]; then
         echo "$username exists!"
@@ -151,17 +155,26 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     echo "Generate configuration file";
+    mkdir -p $SPARK_HOME/logs;
+    mkdir -p $SPARK_HOME/works;
 
     # Configuration Variable
     files=(slaves spark-defaults.conf spark-env.sh);
-    for configuration in "${files[@]}" ; do 
+    for configuration in "${files[@]}" ; do  
         wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
         rm $SPARK_HOME/conf/$configuration;
-        cp /tmp/$configuration $SPARK_HOME/conf;
+        chmod 674 /tmp/$configuration;
+        mv /tmp/$configuration $SPARK_HOME/conf;
     done
 
+    if [ "$5" ] ; then
+        for configuration in "${files[@]}" ; do
+            sed -i "s/localhost/$5/g" $SPARK_HOME/conf/$configuration;
+        done
+    fi
+
     # Network Configuration
-    
+
     interface=$(ip route | awk '/^default/ { print $5 }');
     ipaddr=$(ip -o -4 addr list "$interface" | awk '{print $4}' | cut -d/ -f1);
     gateway=$(ip route | awk '/^default/ { print $3 }');
@@ -258,6 +271,56 @@ if [ $(id -u) -eq 0 ]; then
     chown -R $username:$username "/home/$username/.ssh/";
     sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
     
+    # Firewall
+    echo "################################################";
+    echo "##            Firewall Configuration          ##";
+    echo "################################################";
+    echo "";
+
+    echo "Documentation firewall rule for Spark https://spark.apache.org/";
+
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+        echo "Enable Firewall Services";
+        echo "";
+
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then 
+        echo "Enable Firewall Services";
+        echo "";
+        systemctl start firewalld;
+        systemctl enable firewalld;
+
+        echo "Adding common firewall rule for hadoop security";
+        firewall=$(firewall-cmd --get-default-zone);
+        firewall-cmd --zone="$firewall" --permanent --add-port=8080-8089/tcp;
+        
+        echo "Allowing DNS Services";
+        firewall-cmd --zone="$firewall" --permanent --add-service=dns;
+        echo "";
+
+        echo "Reload Firewall Services";
+        firewall-cmd --reload;
+        echo "";
+
+        echo "";
+        echo "Success Adding Firewall Rule";
+        echo "";
+    else
+        exit 1;
+    fi
+
+    echo "";
+    echo "############################################";
+    echo "##                Cleaning                ##";
+    echo "############################################";
+    echo "";
+
+    echo "Cleaning Installation Packages";
+
+    rm -rf /tmp/$packages.tar.gz;
+    rm -rf express-install.sh;
+
+    echo "Success Installation Packages";
+
     echo "";
     echo "############################################";
     echo "## Thank You For Using Bayu Dwiyan Satria ##";

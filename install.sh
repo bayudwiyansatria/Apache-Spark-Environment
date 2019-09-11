@@ -437,6 +437,19 @@ if [ $(id -u) -eq 0 ]; then
 
     echo "";
     echo "############################################";
+    echo "##                Cleaning                ##";
+    echo "############################################";
+    echo "";
+
+    echo "Cleaning Installation Packages";
+
+    rm -rf /tmp/$packages.tar.gz;
+    rm -rf install.sh;
+
+    echo "Success Installation Packages";
+
+    echo "";
+    echo "############################################";
     echo "## Thank You For Using Bayu Dwiyan Satria ##";
     echo "############################################";
     echo "";
