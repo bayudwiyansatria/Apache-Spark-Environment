@@ -420,12 +420,12 @@ if [ $(id -u) -eq 0 ]; then
                     ssh-copy-id -i ~/.ssh/id_rsa.pub "$username@$ipaddr"
                     ssh-copy-id -i ~/.ssh/id_rsa.pub "$worker"
                 
-                    ssh $worker "wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Hadoop-Environment/master/express-install.sh";
+                    ssh $worker "wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/express-install.sh";
                     ssh $worker "chmod 777 express-install.sh";
-                    ssh $worker "./express-install.sh" $version "http://bdev.bayudwiyansatria.com/dist/hadoop" "$username" "$password" "$ipaddr";
+                    ssh $worker "./express-install.sh" $version "http://bdev.bayudwiyansatria.com/dist/spark" "$username" "$password" "$ipaddr";
                     scp /home/$username/.ssh/authorized_keys /home/$username/.ssh/id_rsa /home/$username/.ssh/id_rsa.pub $username@$worker:/home/$username/.ssh/
                     ssh $worker "chown -R $username:$username /home/$username/.ssh/";
-                    ssh $worker "echo -e  ''$ipaddr' # Master' >> $HADOOP_HOME/etc/hadoop/workers";
+                    ssh $worker "echo -e  ''$ipaddr' # Master' >> $SPARK_HOME/conf/slaves";
                     read -p "Do you want to add more worker? (y/N) [ENTER] (n) " workeraccept;
                     workeraccept=$(printf '%s\n' "$workeraccept" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g'); 
                 done
