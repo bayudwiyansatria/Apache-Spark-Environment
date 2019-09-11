@@ -26,11 +26,11 @@ if [ $(id -u) -eq 0 ]; then
 
     # System Operation Information
     if type lsb_release >/dev/null 2>&1 ; then
-    os=$(lsb_release -i -s);
+        os=$(lsb_release -i -s);
     elif [ -e /etc/os-release ] ; then
-    os=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release);
-    elif [ -e /etc/*-os-release ] ; then
-    os=$(awk -F= '$1 == "ID" {print $3}' /etc/*-os-release);
+        os=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release);
+    elif [ -e /etc/os-release ] ; then
+        os=$(awk -F= '$1 == "ID" {print $3}' /etc/os-release);
     fi
 
     os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]');
@@ -67,7 +67,7 @@ if [ $(id -u) -eq 0 ]; then
 
     SPARK_HOME="/usr/local/spark";
     
-    if [ -e "$SPARK_HOME" ]; then
+    if [ -e "$SPARK_HOME/etc/conf" ]; then
         echo "";
         echo "Spark is already installed on your machines.";
         echo "";
@@ -77,22 +77,10 @@ if [ $(id -u) -eq 0 ]; then
         echo "";
     fi
 
-    argv="$1";
-    echo $argv;
-    if [ "$argv" ] ; then
-        distribution="spark-$argv";
-        packages=$distribution;
-    else
+    if [ "$1" ] ; then
+        version=$1;
         distribution="stable";
-        version="2.4.3";
         packages="spark-$version";
-    fi
-
-    argv="$1";
-    echo $argv;
-    if [ "$argv" ] ; then
-        distribution="spark-$argv";
-        packages=$distribution;
     else
         read -p "Enter spark distribution version, (NULL FOR STABLE) [ENTER] : "  version;
         version=$(printf '%s\n' "$version" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
@@ -124,7 +112,13 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Packages Available
-    url=https://www-eu.apache.org/dist/spark/$distribution/$packages.tgz;
+    if [ "$2" ] ; then
+        mirror="$2";
+    else
+        mirror=https://www-eu.apache.org/dist/hadoop/common;
+    fi
+
+    url=$mirror/$distribution/$packages.tar.gz;
     echo "Checking availablility spark $version";
     if curl --output /dev/null --silent --head --fail "$url"; then
         echo "spark version is available: $url";
@@ -133,6 +127,7 @@ if [ $(id -u) -eq 0 ]; then
         exit 1;
     fi
 
+    echo "";
     echo "spark version $version install is in progress, Please keep your computer power on";
 
     wget https://www-eu.apache.org/dist/spark/$distribution/$packages.tgz -O /tmp/$packages.tgz;
@@ -148,10 +143,10 @@ if [ $(id -u) -eq 0 ]; then
 
     # Extraction Packages
     tar -xvf /tmp/$packages.tgz;
-    mv /tmp/$packages $SPARK_HOME;
+    mv $packages $SPARK_HOME;
 
     # User Generator
-    read -p "Do you want to create user for spark administrator? (y/N) [ENTER] (y) " createuser;
+    read -p "Do you want to create user for hadoop administrator? (y/N) [ENTER] (y) " createuser;
     createuser=$(printf '%s\n' "$createuser" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
 
     if [ -n createuser ] ; then
@@ -163,12 +158,12 @@ if [ $(id -u) -eq 0 ]; then
                 echo "$username exists!"
             else
                 pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
-                user nadd -m -p $pass $username
+                useradd -m -p $pass $username
                 [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
             fi
             usermod -aG $username $password;
         else
-            read -p "Do you want to use exisiting user for spark administrator? (y/N) [ENTER] (y) " existinguser;
+            read -p "Do you want to use exisiting user for hadoop administrator? (y/N) [ENTER] (y) " existinguser;
             if [ "$existinguser" == "y" ] ; then
                 read -p "Enter username : " username;
                 egrep "^$username" /etc/passwd >/dev/null;
@@ -204,15 +199,17 @@ if [ $(id -u) -eq 0 ]; then
     echo "################################################";
     echo "";
 
-    read -p "Using default configuration (y/n) [ENTER] (y): " conf;
-    if $conf == "y" ; then
-        files=(slaves spark-defaults.conf spark-env.sh);
-        for configuration in "${files[@]}" ; do 
-            wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
-            rm $SPARK_HOME/conf/$configuration;
-            cp /tmp/$configuration $SPARK_HOME/conf;
-        done
-    fi
+    echo "Generate configuration file";
+
+    mkdir -p $SPARK_HOME/logs;
+    mkdir -p $SPARK_HOME/works;
+    files=(slaves spark-defaults.conf spark-env.sh);
+    for configuration in "${files[@]}" ; do  
+        wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/$packages/conf/$configuration -O /tmp/$configuration;
+        rm $SPARK_HOME/conf/$configuration;
+        chmod 674 /tmp/$configuration;
+        mv /tmp/$configuration $SPARK_HOME/conf;
+    done
 
     # Network Configuration
 
@@ -224,7 +221,43 @@ if [ $(id -u) -eq 0 ]; then
     prefix=$(ipcalc -p "$subnet" | cut -f2 -d= );
     hostname=$(echo "$HOSTNAME");
     
-    echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+    if [ -n "$master" ] ; then
+        if [ "$master" == "y" ] ; then
+            read -p "Do you want set this host as a worker to?? (y/N) [ENTER] (y): "  work;
+            work=$(printf '%s\n' "$work" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+            if [ -n "$work" ] ; then
+                if [ "$work" == "y" ] ; then
+                    echo "Master & Worker only serve";
+                    echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+                else
+                    echo "Master only serve";
+                fi
+            else
+                echo "Master & Worker only serve";
+                echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+            fi
+        else
+            echo "Worker only serve";
+            echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+        fi
+    else
+        echo "Worker only serve";
+        echo -e ''$ipaddr' # '$hostname'' >> $SPARK_HOME/conf/slaves;
+    fi
+
+    if [ "$master" == "n" ] ; then
+        read -p "Do you want set this host as a worker to?? (y/N) [ENTER] (y): "  masterhost;
+        masterhost=$(printf '%s\n' "$masterhost" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+        files=(slaves spark-defaults.conf spark-env.sh);
+        for configuration in "${files[@]}" ; do
+            sed -i "s/localhost/$masterhost/g" $SPARK_HOME/conf/$configuration;
+        done
+    else
+        files=(slaves spark-defaults.conf spark-env.sh);
+        for configuration in "${files[@]}" ; do
+            sed -i "s/localhost/$ipaddr/g" $SPARK_HOME/conf/$configuration;
+        done
+    fi
 
     chown $username:$username -R $SPARK_HOME;
     chmod g+rwx -R $SPARK_HOME;
@@ -309,6 +342,98 @@ if [ $(id -u) -eq 0 ]; then
     sudo -H -u $username bash -c 'cat /home/'$username'/.ssh/id_rsa.pub >> /home/'$username'/.ssh/authorized_keys';
     chown -R $username:$username "/home/$username/.ssh/";
     sudo -H -u $username bash -c 'chmod 600 /home/'$username'/.ssh/authorized_keys';
+
+    # Firewall
+    echo "################################################";
+    echo "##            Firewall Configuration          ##";
+    echo "################################################";
+    echo "";
+
+    echo "Documentation firewall rule for Hadoop https://hadoop.apache.org/";
+
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+        echo "Enable Firewall Services";
+        echo "";
+
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then 
+        echo "Enable Firewall Services";
+        echo "";
+        systemctl start firewalld;
+        systemctl enable firewalld;
+
+        echo "Adding common firewall rule for hadoop security";
+        firewall=$(firewall-cmd --get-default-zone);
+        firewall-cmd --zone="$firewall" --permanent --add-port=8080-8089/tcp;
+        
+        echo "Allowing DNS Services";
+        firewall-cmd --zone="$firewall" --permanent --add-service=dns;
+        echo "";
+
+        echo "Reload Firewall Services";
+        firewall-cmd --reload;
+        echo "";
+
+        echo "";
+        echo "Success Adding Firewall Rule";
+        echo "";
+    else
+        exit 1;
+    fi
+    
+    if [ "$master" == "n" ] ; then 
+        echo "Your worker already setup";
+    else
+        echo "";
+        echo "############################################";
+        echo "##        Adding Worker Nodes             ##";
+        echo "############################################";
+        echo "";
+
+        read -p "Do you want to setup worker? (y/N) [ENTER] (n) " workeraccept;
+        workeraccept=$(printf '%s\n' "$workeraccept" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
+
+        if [ -n "$workeraccept" ] ; then 
+            if [ "$workeraccept" == "y" ] ; then 
+                while [ "$workeraccept" == "y" ] ; do 
+                    read -p "Please enter worker IP Address [ENTER] " worker;
+                    echo -e  ''$worker' # Worker' >> $SPARK_HOME/conf/slaves;
+                    if [[ -f "~/.ssh/id_rsa" && -f "~/.ssh/id_rsa.pub" ]]; then 
+                        echo "SSH already setup";
+                        echo "";
+                    else
+                        echo "SSH setup";
+                        echo "";
+                        ssh-keygen;
+                        echo "Generate SSH Success";
+                    fi
+
+                    if [ -e "~/.ssh/authorized_keys" ] ; then 
+                        echo "Authorization already setup";
+                        echo "";
+                    else
+                        echo "Configuration authentication";
+                        echo "";
+                        touch ~/.ssh/authorized_keys;
+                        echo "Authentication Compelete";
+                        echo "";
+                    fi
+                    ssh-copy-id -i ~/.ssh/id_rsa.pub "$username@$ipaddr"
+                    ssh-copy-id -i ~/.ssh/id_rsa.pub "$worker"
+                
+                    ssh $worker "wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Hadoop-Environment/master/express-install.sh";
+                    ssh $worker "chmod 777 express-install.sh";
+                    ssh $worker "./express-install.sh" $version "http://bdev.bayudwiyansatria.com/dist/hadoop" "$username" "$password" "$ipaddr";
+                    scp /home/$username/.ssh/authorized_keys /home/$username/.ssh/id_rsa /home/$username/.ssh/id_rsa.pub $username@$worker:/home/$username/.ssh/
+                    ssh $worker "chown -R $username:$username /home/$username/.ssh/";
+                    ssh $worker "echo -e  ''$ipaddr' # Master' >> $HADOOP_HOME/etc/hadoop/workers";
+                    read -p "Do you want to add more worker? (y/N) [ENTER] (n) " workeraccept;
+                    workeraccept=$(printf '%s\n' "$workeraccept" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g'); 
+                done
+            fi
+        fi
+
+        echo "Worker added";
+    fi
 
     echo "";
     echo "############################################";
