@@ -132,7 +132,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
     echo "spark version $version install is in progress, Please keep your computer power on";
 
-    wget https://www-eu.apache.org/dist/spark/$distribution/$packages.tgz -O /tmp/$packages.tgz;
+    wget $mirror/$distribution/$packages.tgz -O /tmp/$packages.tgz;
 
     echo "";
     echo "################################################";
@@ -144,7 +144,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Extraction Packages
-    tar -zxvf /tmp/$packages.tgz;
+    tar -xvf /tmp/$packages.tgz;
     mv $packages $SPARK_HOME;
 
     # User Generator
@@ -165,7 +165,7 @@ if [ $(id -u) -eq 0 ]; then
             fi
             usermod -aG $username $password;
         else
-            read -p "Do you want to use exisiting user for hadoop administrator? (y/N) [ENTER] (y) " existinguser;
+            read -p "Do you want to use exisiting user for spark administrator? (y/N) [ENTER] (y) " existinguser;
             if [ "$existinguser" == "y" ] ; then
                 read -p "Enter username : " username;
                 egrep "^$username" /etc/passwd >/dev/null;
