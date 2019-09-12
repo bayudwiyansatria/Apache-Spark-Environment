@@ -117,10 +117,10 @@ if [ $(id -u) -eq 0 ]; then
     if [ "$2" ] ; then
         mirror="$2";
     else
-        mirror=https://www-eu.apache.org/dist/hadoop/common;
+        mirror=https://www-eu.apache.org/dist/spark;
     fi
 
-    url=$mirror/$distribution/$packages.tar.gz;
+    url=$mirror/$distribution/$packages.tgz;
     echo "Checking availablility spark $version";
     if curl --output /dev/null --silent --head --fail "$url"; then
         echo "spark version is available: $url";
