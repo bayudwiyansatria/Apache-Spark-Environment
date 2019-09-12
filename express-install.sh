@@ -188,15 +188,13 @@ if [ $(id -u) -eq 0 ]; then
     chown $username:$username -R $SPARK_HOME;
     chmod g+rwx -R $SPARK_HOME;
 
-
     echo "";
     echo "################################################";
     echo "##             Java Virtual Machine           ##";
     echo "################################################";
     echo "";
-
+    
     echo "Checking Java virtual machine is running on your machine";
-
     profile="/etc/profile.d/bayudwiyansatria.sh";
     env=$(echo "$PATH");
     if [ -e "$profile" ] ; then
