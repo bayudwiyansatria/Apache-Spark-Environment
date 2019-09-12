@@ -148,7 +148,7 @@ if [ $(id -u) -eq 0 ]; then
     mv $packages $SPARK_HOME;
 
     # User Generator
-    read -p "Do you want to create user for hadoop administrator? (y/N) [ENTER] (y) " createuser;
+    read -p "Do you want to create user for spark administrator? (y/N) [ENTER] (y) " createuser;
     createuser=$(printf '%s\n' "$createuser" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
 
     if [ -n createuser ] ; then
@@ -351,7 +351,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "################################################";
     echo "";
 
-    echo "Documentation firewall rule for Hadoop https://hadoop.apache.org/";
+    echo "Documentation firewall rule for Spark https://spark.apache.org/";
 
     if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
         echo "Enable Firewall Services";
@@ -363,7 +363,7 @@ if [ $(id -u) -eq 0 ]; then
         systemctl start firewalld;
         systemctl enable firewalld;
 
-        echo "Adding common firewall rule for hadoop security";
+        echo "Adding common firewall rule for spark security";
         firewall=$(firewall-cmd --get-default-zone);
         firewall-cmd --zone="$firewall" --permanent --add-port=8080-8089/tcp;
         

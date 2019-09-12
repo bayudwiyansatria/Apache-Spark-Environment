@@ -289,7 +289,7 @@ if [ $(id -u) -eq 0 ]; then
         systemctl start firewalld;
         systemctl enable firewalld;
 
-        echo "Adding common firewall rule for hadoop security";
+        echo "Adding common firewall rule for spark security";
         firewall=$(firewall-cmd --get-default-zone);
         firewall-cmd --zone="$firewall" --permanent --add-port=8080-8089/tcp;
         
