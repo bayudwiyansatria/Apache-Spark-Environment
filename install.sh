@@ -24,31 +24,24 @@ if [ $(id -u) -eq 0 ]; then
     echo "Please wait! Checking System Compability";
     echo "";
 
-    # System Operation Information
+    # Operation System Information
     if type lsb_release >/dev/null 2>&1 ; then
         os=$(lsb_release -i -s);
     elif [ -e /etc/os-release ] ; then
         os=$(awk -F= '$1 == "ID" {print $2}' /etc/os-release);
     elif [ -e /etc/os-release ] ; then
         os=$(awk -F= '$1 == "ID" {print $3}' /etc/os-release);
+    else
+        exit 1;
     fi
 
-    os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]');
+    os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
 
+    # Update OS Current Distribution
     read -p "Update Distro (y/n) [ENTER] (y)(Recommended): " update;
     update=$(printf '%s\n' "$update" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
-    
-    if [ -n "$update" ] ; then
-        if [ "$update" == "y" ]; then
-            if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
-                apt-get -y update && apt-get -y upgrade;
-            elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
-                yum -y update && yum -y upgrade;
-            else
-                exit 1;
-            fi
-        fi
-    else
+
+    if [ "$update" == "y" ] ; then 
         if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
             apt-get -y update && apt-get -y upgrade;
         elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
@@ -56,6 +49,15 @@ if [ $(id -u) -eq 0 ]; then
         else
             exit 1;
         fi
+    fi
+
+    # Required Packages
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+        apt-get -y install git && apt-get -y install wget;
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ]; then
+        yum -y install git && yum -y install wget;
+    else
+        exit 1;
     fi
 
     echo "################################################";
@@ -443,7 +445,7 @@ if [ $(id -u) -eq 0 ]; then
 
     echo "Cleaning Installation Packages";
 
-    rm -rf /tmp/$packages.tar.gz;
+    rm -rf /tmp/$packages.tgz;
     rm -rf install.sh;
 
     echo "Success Installation Packages";
