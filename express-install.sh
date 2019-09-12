@@ -340,7 +340,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "Feel free to contact us";
     echo "";
 
-    read -p "Do you want to reboot? (y/N) [ENTER] [y] : "  reboot;
+    read -p "Do you want to reboot? (y/N) [ENTER] [n] : "  reboot;
     if [ -n "$reboot" ] ; then
         if [ "$reboot" == "y" ]; then
             reboot;
@@ -348,7 +348,7 @@ if [ $(id -u) -eq 0 ]; then
             echo "We highly recomended to reboot your system";
         fi
     else
-        reboot;
+        echo "We highly recomended to reboot your system";
     fi
 
 else
