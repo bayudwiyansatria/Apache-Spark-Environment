@@ -316,7 +316,7 @@ if [ $(id -u) -eq 0 ]; then
 
     echo "Cleaning Installation Packages";
 
-    rm -rf /tmp/$packages.tar.gz;
+    rm -rf /tmp/$packages.tgz;
     rm -rf express-install.sh;
 
     echo "Success Installation Packages";
