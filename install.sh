@@ -144,7 +144,7 @@ if [ $(id -u) -eq 0 ]; then
     echo "";
 
     # Extraction Packages
-    tar -xvf /tmp/$packages.tgz;
+    tar -zxvf /tmp/$packages.tgz;
     mv $packages $SPARK_HOME;
 
     # User Generator
