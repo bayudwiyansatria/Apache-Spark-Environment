@@ -38,19 +38,14 @@ if [ $(id -u) -eq 0 ]; then
     os=$(printf '%s\n' "$os" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
 
     # Update OS Current Distribution
-    read -p "Update Distro (y/n) [ENTER] (y)(Recommended): " update;
-    update=$(printf '%s\n' "$update" | LC_ALL=C tr '[:upper:]' '[:lower:]' | sed 's/"//g');
-
-    if [ "$update" == "y" ] ; then 
-        if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
-            apt-get -y update && apt-get -y upgrade;
-        elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
-            yum -y update && yum -y upgrade;
-        else
-            exit 1;
-        fi
+    if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
+        apt-get -y update && apt-get -y upgrade;
+    elif [ "$os" == "centos" ] || [ "$os" == "rhel" ] || [ "$os" == "fedora" ] ; then
+        yum -y update && yum -y upgrade;
+    else
+        exit 1;
     fi
-
+    
     # Required Packages
     if [ "$os" == "ubuntu" ] || [ "$os" == "debian" ] ; then
         apt-get -y install git && apt-get -y install wget;
