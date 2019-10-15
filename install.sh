@@ -422,10 +422,11 @@ if [ $(id -u) -eq 0 ]; then
                     fi
                     ssh-copy-id -i ~/.ssh/id_rsa.pub "$username@$ipaddr"
                     ssh-copy-id -i ~/.ssh/id_rsa.pub "$worker"
-                
+
+                    scp /tmp/$packages.tgz $worker:/tmp/
                     ssh $worker "wget https://raw.githubusercontent.com/bayudwiyansatria/Apache-Spark-Environment/master/express-install.sh";
                     ssh $worker "chmod 777 express-install.sh";
-                    ssh $worker "./express-install.sh" $version "http://bdev.bayudwiyansatria.com/dist/spark" "$username" "$password" "$ipaddr";
+                    ssh $worker "./express-install.sh" "$version" "$mirror" "$username" "$password" "$ipaddr";
                     scp /home/$username/.ssh/authorized_keys /home/$username/.ssh/id_rsa /home/$username/.ssh/id_rsa.pub $username@$worker:/home/$username/.ssh/
                     ssh $worker "chown -R $username:$username /home/$username/.ssh/";
                     ssh $worker "echo -e  ''$ipaddr' # Master' >> $SPARK_HOME/conf/slaves";

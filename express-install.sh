@@ -96,20 +96,23 @@ if [ $(id -u) -eq 0 ]; then
         mirror=https://www-eu.apache.org/dist/spark;
     fi
 
-    url=$mirror/$distribution/$packages.tgz;
-    echo "Checking availablility spark $version";
-    if curl --output /dev/null --silent --head --fail "$url"; then
-        echo "Spark version is available: $url";
+    if [ "$5" ] ; then
+        echo "Distribution according to master";
     else
-        echo "Spark version isn't available: $url";
-        exit 1;
+        url=$mirror/$distribution/$packages.tgz;
+        echo "Checking availablility spark $version";
+        if curl --output /dev/null --silent --head --fail "$url"; then
+            echo "Spark version is available: $url";
+        else
+            echo "Spark version isn't available: $url";
+            exit 1;
+        fi
+
+        echo "";
+        echo "Spark version $version install is in progress, Please keep your computer power on";
+
+        wget $mirror/$distribution/$packages.tgz -O /tmp/$packages.tgz;
     fi
-
-    echo "";
-    echo "Spark version $version install is in progress, Please keep your computer power on";
-
-    wget $mirror/$distribution/$packages.tgz -O /tmp/$packages.tgz;
-
     echo "";
     echo "################################################";
     echo "##             Spark Installation            ##";
