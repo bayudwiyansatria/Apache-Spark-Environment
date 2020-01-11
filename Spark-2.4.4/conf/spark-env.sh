@@ -22,20 +22,13 @@
 
 # Options read when launching programs locally with
 # ./bin/run-example or ./bin/spark-submit
-# - HADOOP_CONF_DIR, to point Spark towards Hadoop configuration files
-# - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
-# - SPARK_PUBLIC_DNS, to set the public dns name of the driver program
-
-# Options read by executors and drivers running inside the cluster
-# - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
-# - SPARK_PUBLIC_DNS, to set the public DNS name of the driver program
+HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+# SPARK_LOCAL_IP=192.168.99.101
+# SPARK_PUBLIC_DNS=spark.bayudwiyansatria.com
 # - SPARK_LOCAL_DIRS, storage directories to use on this node for shuffle and RDD data
 # - MESOS_NATIVE_JAVA_LIBRARY, to point to your libmesos.so if you use Mesos
-
-# Options read in YARN client/cluster mode
-# - SPARK_CONF_DIR, Alternate conf dir. (Default: ${SPARK_HOME}/conf)
-# - HADOOP_CONF_DIR, to point Spark towards Hadoop configuration files
-# - YARN_CONF_DIR, to point Spark towards YARN configuration files when you use YARN
+SPARK_CONF_DIR=${SPARK_HOME}/conf
+YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 # - SPARK_EXECUTOR_CORES, Number of cores for the executors (Default: 1).
 # - SPARK_EXECUTOR_MEMORY, Memory per Executor (e.g. 1000M, 2G) (Default: 1G)
 # - SPARK_DRIVER_MEMORY, Memory for Driver (e.g. 1000M, 2G) (Default: 1G)
@@ -65,11 +58,6 @@
 # - SPARK_NO_DAEMONIZE  Run the proposed command in the foreground. It will not output a PID file.
 # Options for native BLAS, like Intel MKL, OpenBLAS, and so on.
 # You might get better performance to enable these options if using native BLAS (see SPARK-21305).
-# - MKL_NUM_THREADS=1        Disable multi-threading of Intel MKL
+MKL_NUM_THREADS=1
 # - OPENBLAS_NUM_THREADS=1   Disable multi-threading of OpenBLAS
-#export SPARK_MASTER_HOST='10.252.37.109'
-#export JAVA_HOME=/usr/lib/jvm/jdk-8u191/jdk1.8.0_191
-#export SPARK_CONF_DIR=/usr/local/spark/conf
-#export SPARK_LOG_DIR=/tmp
-#export SPARK_PID_DIR=/tmp
-#export PYSPARK_PYTHON='/usr/bin/python3.6'
+#SPARK_DIST_CLASSPATH=$(hadoop classpath)
